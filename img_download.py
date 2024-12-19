@@ -1,5 +1,4 @@
 from bing_image_downloader import downloader
-import json
 import os
 import random
 
@@ -19,7 +18,7 @@ def download(query, limit):
     downloader.download(
         query, 
         limit=limit,  
-        output_dir='dataset/images', 
+        output_dir='n-shot/images', 
         adult_filter_off=True, 
         force_replace=False, 
         timeout=60, 
@@ -50,13 +49,15 @@ def split_images(dataset_dir, split):
                 test_txt.write(f'{thai_name}/{img.split('.jpg')[0]}\n')
 
 if __name__ == "__main__":
-    N = 100
-    with open('mock_data/food.json', mode='r', encoding='utf-8') as f:
-        data = json.load(f)
+    N = 10
 
-    foods = list(data.keys())
-    thai_name = [data[food]["Thai"] for food in foods]
-    for thai in thai_name: download(query=thai, limit=N)
+    thai_name = []
+    with open('n-shot/meta/test_classes.txt', mode='r', encoding='utf-8') as f:
+        lines = f.readlines()
+        for line in lines:
+            thai_name.append(line.split('\n')[0].strip())
 
-    os.makedirs(f'dataset/meta', exist_ok=True)
-    split_images('dataset/images', split = 0.8)
+    for thai in thai_name: 
+        download(query=thai, limit=N)
+        path = f"n-shot/images/{thai}"
+        change_extension_to_jpg(path)
